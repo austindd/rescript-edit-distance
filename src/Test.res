@@ -1,16 +1,23 @@
 open EditDistance
 
 module Levenshtein = {
-  let t1 = levenshtein("bookling", "back")
-  Js.log(t1);
+  let t1 = levenshtein("back", "books")
+  let t2 = levenshtein("books", "back")
 
-  let results = [t1 == 2]
-  let finalResult = results->Belt.Array.reduceU((. acc, result) => {
-    if acc {
-      result
-    } else {
-      false
-    }
-  })
+  let data = [t1, t2]
+  let expected = [3, 3]
+  let result = data == expected
+
+  Js.log((result, data))
 }
-Js.log(Levenshtein.results)
+
+module DamerauLevenshtein = {
+  let t1 = damerauLevenshtein3("back", "books")
+  let t2 = levenshtein("books", "back")
+
+  let data = [t1, t2]
+  let expected = [3, 3]
+  let result = data == expected
+
+  Js.log((result, data))
+}
