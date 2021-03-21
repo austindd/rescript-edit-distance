@@ -1,0 +1,19 @@
+{
+  "name": "rescript-edit-distance",
+  "version": "0.0.1",
+  "description": "A collection of 'edit-distance' string comparison algorithms for use in the ReScript language.",
+  "main": "index.js",
+  "repository": "git@github.com:austindd/rescript-edit-distance.git",
+  "author": "Austin Davis <austindanieldavis@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "clean": "npx bsb -clean-world",
+    "build": "npx bsb -make-world",
+    "watch": "npx bsb -make-world -w",
+    "dev": "yarn clean && yarn build && yarn watch"
+  },
+  "dependencies": {
+    "bs-platform": "^9.0.2"
+  }
+}
