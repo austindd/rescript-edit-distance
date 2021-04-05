@@ -12,7 +12,7 @@ module Levenshtein = {
 }
 
 module DamerauLevenshtein = {
-  let t1 = damerauLevenshtein3("back", "books")
+  let t1 = damerau_levenshtein_3("back", "books")
   let t2 = levenshtein("books", "back")
 
   let data = [t1, t2]

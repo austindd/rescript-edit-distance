@@ -67,7 +67,7 @@ let levenshtein = (word1: string, word2: string) => {
   }
 }
 
-let damerauLevenshtein = (~maxLength=?, _first: string, _second: string) => {
+let damerau_levenshtein = (~maxLength=?, _first: string, _second: string) => {
   let maxL = ref(
     switch maxLength {
     | None => 255
@@ -156,7 +156,7 @@ let damerauLevenshtein = (~maxLength=?, _first: string, _second: string) => {
   }
 }
 
-let damerauLevenshtein2 = (~maxLength=?, _first: string, _second: string) => {
+let damerau_levenshtein_2 = (~maxLength=?, _first: string, _second: string) => {
   module Arr = Belt.Array
   module Str = Js.String2
 
@@ -241,7 +241,7 @@ let damerauLevenshtein2 = (~maxLength=?, _first: string, _second: string) => {
   }
 }
 
-let damerauLevenshtein3 = (~maxLength=?, _first: string, _second: string) => {
+let damerau_levenshtein_3 = (~maxLength=?, _first: string, _second: string) => {
   module Arr = Belt.Array
   module Str = Js.String2
 
@@ -270,6 +270,105 @@ let damerauLevenshtein3 = (~maxLength=?, _first: string, _second: string) => {
       maxL + 1
     } else {
       ////
+      let rec outerLoop = (~i, ~currentRow, ~previousRow, ~transpositionRow, ~lastSecondCh) => {
+        switch Str.codePointAt(second, i - 1) {
+        | None => failwith(ErrorMsg.assert_codePointAt_alwaysSome)
+        | Some(secondCh) =>
+          Arr.setUnsafe(currentRow, 0, i)
+          let __a = i - maxL - 1
+          let from_ = __a > 1 ? __a : 1
+          let __b = i + maxL + 1
+          let to_ = __b < firstLength ? __b : firstLength
+          let lastFirstCh = ref(0)
+          for j in from_ to to_ {
+            switch Str.codePointAt(first, j - 1) {
+            | None => failwith(ErrorMsg.assert_codePointAt_alwaysSome)
+            | Some(firstCh) =>
+              let cost = firstCh == secondCh ? 0 : 1
+
+              let value = {
+                let temp1 = min3(
+                  Arr.getUnsafe(currentRow, j - 1) + 1,
+                  Arr.getUnsafe(previousRow, j) + 1,
+                  Arr.getUnsafe(previousRow, j - 1) + cost,
+                )
+
+                if firstCh == lastSecondCh && secondCh == lastFirstCh.contents {
+                  let temp2 = Arr.getUnsafe(transpositionRow, j - 2) + cost
+                  temp1 < temp2 ? temp1 : temp2
+                } else {
+                  temp1
+                }
+              }
+
+              Arr.setUnsafe(currentRow, j, value)
+              lastFirstCh := firstCh
+            }
+          }
+          if i >= secondLength {
+            Arr.getUnsafe(currentRow, firstLength)
+          } else {
+            outerLoop(
+              ~i=succ(i),
+              ~transpositionRow=previousRow,
+              ~previousRow=currentRow,
+              ~currentRow=transpositionRow,
+              ~lastSecondCh=secondCh,
+            )
+          }
+        }
+      }
+
+      let (currentRow, previousRow, transpositionRow) = ([], [], [])
+      let correctLength = if firstLength > maxL + 1 {
+        firstLength + 1
+      } else {
+        maxL + 1
+      }
+      Arr.truncateToLengthUnsafe(currentRow, correctLength)
+      Arr.truncateToLengthUnsafe(previousRow, correctLength)
+      Arr.truncateToLengthUnsafe(transpositionRow, correctLength)
+
+      for i in 0 to correctLength {
+        Arr.setUnsafe(currentRow, i, 0)
+        Arr.setUnsafe(previousRow, i, 0)
+        Arr.setUnsafe(transpositionRow, i, 0)
+      }
+
+      for i in 0 to firstLength {
+        Arr.setUnsafe(previousRow, i, i)
+      }
+
+      outerLoop(~i=1, ~currentRow, ~previousRow, ~transpositionRow, ~lastSecondCh=0)
+    }
+  }
+}
+
+let damerau_levenshtein_4 = (~maxLength=?, _first: string, _second: string) => {
+  module Arr = Belt.Array
+  module Str = Js.String2
+
+  let l1 = Str.length(_first)
+  let l2 = Str.length(_second)
+
+  let first = l1 > l2 ? _second : _first
+  let firstLength = l1 > l2 ? l2 : l1
+  let second = l1 > l2 ? _first : _second
+  let secondLength = l1 > l2 ? l1 : l2
+
+  if firstLength == 0 {
+    secondLength
+  } else if secondLength == 0 {
+    firstLength
+  } else {
+    let maxL = switch maxLength {
+    | None => 255
+    | Some(x) => x < 0 ? secondLength : x
+    }
+
+    if secondLength - firstLength > maxL {
+      maxL + 1
+    } else {
       let rec outerLoop = (~i, ~currentRow, ~previousRow, ~transpositionRow, ~lastSecondCh) => {
         switch Str.codePointAt(second, i - 1) {
         | None => failwith(ErrorMsg.assert_codePointAt_alwaysSome)
